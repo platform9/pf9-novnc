@@ -102,6 +102,7 @@ export default class Mouse {
     }
 
     _handleMouseDown(e) {
+        window.focus();
         // Touch events have implicit capture
         if (e.type === "mousedown") {
             setCapture(this._target);
