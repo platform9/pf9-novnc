@@ -1086,6 +1086,10 @@ export default class RFB extends EventTargetMixin {
          * mouse events might be used to control the viewport
          */
 
+        if (ev.type === 'mousedown') {
+            window.focus();
+        }
+
         if (ev.type === 'click') {
             /*
              * Note: This is only needed for the 'click' event as it fails
