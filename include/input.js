@@ -257,6 +257,7 @@ var Keyboard, Mouse;
         },
 
         _handleMouseDown: function (e) {
+            window.focus();
             this._captureMouse();
             this._handleMouseButton(e, 1);
         },
