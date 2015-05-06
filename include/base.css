@@ -133,6 +133,7 @@ html {
 }
 
 #noVNC_canvas {
+  cursor: none;
   position: absolute;
   left: 0;
   right: 0;
