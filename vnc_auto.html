@@ -45,7 +45,12 @@
 
 <body style="margin: 0px;">
     <div style="text-align: center; margin: 10px 0px">
-        <p>If you see a black screen, click on it and start typing to activate the console.</p>
+        <div style='display: inline-block'>
+            <p>If you see a black screen, click on it and start typing to activate the console.</p>
+            <div style="text-align: right">
+                <input type=button value="Send CtrlAltDel" id="sendCtrlAltDelButton">
+            </div>
+        </div>
     </div>
     <div id="noVNC_screen">
             <div id="noVNC_status_bar" class="noVNC_status_bar" style="margin-top: 0px;">
@@ -54,8 +59,8 @@
                         Loading
                     </div></td>
                     <td width="1%"><div id="noVNC_buttons">
-                        <input type=button value="Send CtrlAltDel"
-                            id="sendCtrlAltDelButton">
+                        <!-- <input type=button value="Send CtrlAltDel"
+                            id="sendCtrlAltDelButton"> -->
                         <span id="noVNC_xvp_buttons">
                         <input type=button value="Shutdown"
                             id="xvpShutdownButton">
