@@ -241,6 +241,17 @@
                 return; // don't continue trying to connect
             }
 
+            // get name of instance
+            var regex = /\(([^)]+)\)/;
+
+            var getTitle = setInterval(function() {
+                var matches = regex.exec(rfb._fb_name);
+                if (matches) {
+                        document.title = matches[1];
+                        clearInterval(getTitle);
+                }
+            }, 1000);
+
             rfb.connect(host, port, password, path);
         };
         </script>
