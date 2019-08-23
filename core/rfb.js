@@ -300,7 +300,7 @@ export default class RFB extends EventTargetMixin {
         this._scaleViewport = false;
         this._resizeSession = false;
 
-        this._showDotCursor = false;
+        this._showDotCursor = true; /* PF9: false */
 
         this._qualityLevel = 6;
         this._compressionLevel = 2;

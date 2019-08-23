@@ -2976,6 +2976,8 @@ describe('Remote Frame Buffer protocol client', function () {
 
                 describe('the Cursor pseudo-encoding handler', function () {
                     beforeEach(function () {
+                        // PF9: showDotCursor defaults to true
+                        client.showDotCursor = false;
                         sinon.spy(client._cursor, 'change');
                     });
 

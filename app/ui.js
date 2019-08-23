@@ -184,7 +184,7 @@ const UI = {
         UI.initSetting('shared', true);
         UI.initSetting('bell', 'on');
         UI.initSetting('view_only', false);
-        UI.initSetting('show_dot', false);
+        UI.initSetting('show_dot', true); /* PF9: false */
         UI.initSetting('path', 'websockify');
         UI.initSetting('repeaterID', '');
         UI.initSetting('reconnect', false);
