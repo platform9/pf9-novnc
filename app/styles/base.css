@@ -24,7 +24,7 @@ body {
   padding:0;
   font-family: Helvetica;
   /*Background image with light grey curve.*/
-  background-color:#494949;
+  /*background-color:#494949; PF9 */
   background-repeat:no-repeat;
   background-position:right bottom;
   height:100%;
@@ -584,7 +584,7 @@ select:active {
 }
 
 #noVNC_modifiers {
-  background-color: rgb(92, 92, 92);
+  /*background-color: rgb(92, 92, 92); PF9 */
   border: none;
   padding: 0 10px;
 }
@@ -835,7 +835,7 @@ select:active {
 #noVNC_container {
   width: 100%;
   height: 100%;
-  background-color: #313131;
+  /*background-color: #313131 PF9 */
   border-bottom-right-radius: 800px 600px;
   /*border-top-left-radius: 800px 600px;*/
 }

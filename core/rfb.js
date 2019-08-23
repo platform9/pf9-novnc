@@ -31,7 +31,8 @@ import TightPNGDecoder from "./decoders/tightpng.js";
 
 // How many seconds to wait for a disconnect to finish
 const DISCONNECT_TIMEOUT = 3;
-const DEFAULT_BACKGROUND = 'rgb(40, 40, 40)';
+//const DEFAULT_BACKGROUND = 'rgb(40, 40, 40)';
+const DEFAULT_BACKGROUND = 'rgb(255, 255, 255)'; /* PF9: use white background */
 
 export default class RFB extends EventTargetMixin {
     constructor(target, url, options) {
