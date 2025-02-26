@@ -14,7 +14,7 @@
     Connect parameters are provided in query string:
         http://example.com/?host=HOST&port=PORT&scale=true
     -->
-    <title>Platform9 Console</title>
+    <title>Console</title>
 
     <meta charset="utf-8">
 
@@ -114,6 +114,7 @@
             desktopName = e.detail.name;
             // PF9: use instance name as desktopName
             desktopName = readQueryVariable('instance', e.detail.name)
+            document.title = `Console - ${desktopName}`
         }
 
         // Since most operating systems will catch Ctrl+Alt+Del
