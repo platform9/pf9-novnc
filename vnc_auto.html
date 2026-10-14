@@ -181,18 +181,42 @@
         url += '/' + path;
 
         // Creating a new RFB object will start a new connection
-        rfb = new RFB(document.getElementById('screen'), url,
-                      { credentials: { password: password } });
+        function connect(token) {
+            rfb = new RFB(document.getElementById('screen'), url,
+                          { credentials: { password: password },
+                            wsProtocols: token ? ['binary', 'x-auth-token.' + token] : [] });
 
-        // Add listeners to important events from the RFB module
-        rfb.addEventListener("connect",  connectedToServer);
-        rfb.addEventListener("disconnect", disconnectedFromServer);
-        rfb.addEventListener("credentialsrequired", credentialsAreRequired);
-        rfb.addEventListener("desktopname", updateDesktopName);
+            // Add listeners to important events from the RFB module
+            rfb.addEventListener("connect",  connectedToServer);
+            rfb.addEventListener("disconnect", disconnectedFromServer);
+            rfb.addEventListener("credentialsrequired", credentialsAreRequired);
+            rfb.addEventListener("desktopname", updateDesktopName);
 
-        // Set parameters that can be changed on an active connection
-        rfb.viewOnly = readQueryVariable('view_only', false);
-        rfb.scaleViewport = readQueryVariable('scale', false);
+            // Set parameters that can be changed on an active connection
+            rfb.viewOnly = readQueryVariable('view_only', false);
+            rfb.scaleViewport = readQueryVariable('scale', false);
+        }
+
+        // PF9 [PCD-8084]: the console proxy wants the user's Keystone token,
+        // and a browser WebSocket can't send headers. The opener (PCD UI)
+        // sends the token in a message and it goes out as a subprotocol.
+        // The ready message carries no secret, so '*' is fine. If no token
+        // arrives, connect without one and let the proxy decide.
+        let started = false;
+        function start(token) {
+            if (!started) { started = true; connect(token); }
+        }
+        if (window.opener) {
+            window.addEventListener("message", (e) => {
+                if (e.source === window.opener && e.data && e.data.type === "auth") {
+                    start(e.data.token);
+                }
+            });
+            window.opener.postMessage({ type: "console-ready" }, "*");
+            setTimeout(start, 3000);
+        } else {
+            start();
+        }
     </script>
 </head>
 
