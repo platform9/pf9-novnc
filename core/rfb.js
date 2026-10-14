@@ -53,6 +53,7 @@ export default class RFB extends EventTargetMixin {
         this._rfb_credentials = options.credentials || {};
         this._shared = 'shared' in options ? !!options.shared : true;
         this._repeaterID = options.repeaterID || '';
+        this._wsProtocols = options.wsProtocols || []; /* PF9: [PCD-8084] */
         this._showDotCursor = options.showDotCursor || true; /* PF9: false */
 
         // Internal state
@@ -398,7 +399,7 @@ export default class RFB extends EventTargetMixin {
 
         try {
             // WebSocket.onopen transitions to the RFB init states
-            this._sock.open(this._url, ['binary']);
+            this._sock.open(this._url, ['binary'].concat(this._wsProtocols));
         } catch (e) {
             if (e.name === 'SyntaxError') {
                 this._fail("Invalid host or port (" + e + ")");
