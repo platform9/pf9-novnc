@@ -1,0 +1,102 @@
+name: Security scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  trivy_scan:
+    name: Trivy Security Scan (Full)
+    runs-on: ubuntu-latest
+    outputs:
+      trivy_high_found: ${{ steps.scan.outputs.trivy_high_found }}
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Trivy
+        run: |
+          sudo apt update
+          sudo apt install -y jq
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | \
+            sudo sh -s -- -b /usr/local/bin v0.70.0
+
+      - name: Sanitize branch name
+        run: echo "SAFE_REF_NAME=${GITHUB_REF_NAME//\//-}" >> $GITHUB_ENV
+
+      - name: Run Trivy Filesystem Scan
+        id: scan
+        run: |
+          set -euo pipefail
+          echo "Running Trivy scan (HIGH/CRITICAL)..."
+          mkdir -p tmp
+          trivy fs --format json --severity HIGH,CRITICAL --output tmp/trivy.json .
+          [[ -f tmp/trivy.json ]] || echo '{"Results":[]}' > tmp/trivy.json
+          if ! jq -e '.Results and (.Results | length > 0)' tmp/trivy.json >/dev/null; then
+            echo "No scan results available — likely no supported files found."
+            echo "trivy_high_found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          count=$(jq -e '
+            (.Results // [])
+            | map(.Vulnerabilities? // [])
+            | add
+            | map(select(.Severity=="HIGH" or .Severity=="CRITICAL"))
+            | length
+          ' tmp/trivy.json)
+          if [[ "$count" -gt 0 ]]; then
+            echo "trivy_high_found=true"  >> "$GITHUB_OUTPUT"
+          else
+            echo "trivy_high_found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload Trivy Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-json-${{ env.SAFE_REF_NAME }}
+          path: tmp/trivy.json
+
+      - name: Generate PR Body (if vulnerabilities found)
+        if: ${{ steps.scan.outputs.trivy_high_found == 'true' }}
+        run: |
+          echo "# 🛡️ Trivy Scan Report for branch \`${GITHUB_REF_NAME}\`" > tmp/pr-body.md
+          jq -r '
+            (.Results // [])
+            | .[]
+            | .Target as $file
+            | (.Vulnerabilities? // [])
+            | map(select(.Severity=="HIGH" or .Severity=="CRITICAL"))
+            | .[]
+            | "* File: \($file)\n  • Vulnerability ID: \(.VulnerabilityID)\n  • Pkg: \(.PkgName) \(.InstalledVersion)\n  • Severity: \(.Severity)\n  • Title: \(.Title)\n"
+          ' tmp/trivy.json >> tmp/pr-body.md
+
+      - name: Create Pull Request (if vulnerabilities found)
+        if: ${{ github.event_name == 'push' && steps.scan.outputs.trivy_high_found == 'true' }}
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: 'chore: vulnerabilities detected by Trivy (HIGH/CRITICAL)'
+          title: 'Trivy Vulnerability Report for branch ${{ github.ref_name }}'
+          body-path: tmp/pr-body.md
+          branch: auto/trivy-scan/${{ env.SAFE_REF_NAME }}
+          base: ${{ github.ref_name }}
+          delete-branch: true
+
+      - name: Close Stale Vulnerability PR (if clean)
+        if: ${{ github.event_name == 'push' && steps.scan.outputs.trivy_high_found == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="auto/trivy-scan/${{ env.SAFE_REF_NAME }}"
+          PR_NUMBER=$(gh pr list --repo "${{ github.repository }}" --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [[ -n "$PR_NUMBER" ]]; then
+            gh pr close "$PR_NUMBER" --repo "${{ github.repository }}" --comment "No HIGH/CRITICAL vulnerabilities found in latest scan on \`${{ github.ref_name }}\`. Closing report."
+          fi
+
+      - name: Fail Job If Vulnerabilities Found
+        if: ${{ steps.scan.outputs.trivy_high_found == 'true' }}
+        run: exit 1
