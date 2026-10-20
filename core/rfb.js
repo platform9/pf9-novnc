@@ -40,7 +40,8 @@ import H264Decoder from "./decoders/h264.js";
 
 // How many seconds to wait for a disconnect to finish
 const DISCONNECT_TIMEOUT = 3;
-const DEFAULT_BACKGROUND = 'rgb(40, 40, 40)';
+//const DEFAULT_BACKGROUND = 'rgb(40, 40, 40)';
+const DEFAULT_BACKGROUND = 'rgb(255, 255, 255)'; /* PF9: use white background */
 
 // Minimum wait (ms) between two mouse moves
 const MOUSE_MOVE_DELAY = 17;
@@ -299,7 +300,7 @@ export default class RFB extends EventTargetMixin {
         this._scaleViewport = false;
         this._resizeSession = false;
 
-        this._showDotCursor = false;
+        this._showDotCursor = true; /* PF9: false */
 
         this._qualityLevel = 6;
         this._compressionLevel = 2;
@@ -1085,6 +1086,10 @@ export default class RFB extends EventTargetMixin {
          * We don't check connection status or viewOnly here as the
          * mouse events might be used to control the viewport
          */
+
+        if (ev.type === 'mousedown') {
+            window.focus();
+        }
 
         if (ev.type === 'click') {
             /*
